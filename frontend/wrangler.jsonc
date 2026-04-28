@@ -1,0 +1,12 @@
+{
+  "name": "microbex-onboarding",
+  "compatibility_date": "2026-04-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": "dist",
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "PASTE_YOUR_HYPERDRIVE_ID_HERE"
+    }
+  ]
+}
