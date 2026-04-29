@@ -37,12 +37,12 @@ export async function onRequestPost(context) {
       data: result.rows[0] || { email, message: "Already exists" }
     });
 
-  } catch (error) {
-    console.error("API ERROR:", error);
+   } catch (error) {
+     console.error("API ERROR:", error);
 
-    return Response.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
-  }
-}np
+     return Response.json(
+       { success: false, error: error.message },
+       { status: 500 }
+     );
+   }
+}
