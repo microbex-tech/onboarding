@@ -6,11 +6,7 @@ function isValidEmail(email) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const client = new Client({
-    connectionString: env.HYPERDRIVE.connectionString,
-    connectionTimeoutMillis: 5000,
-    query_timeout: 5000
-  });
+  let client;
 
   try {
     const body = await request.json();
@@ -24,14 +20,18 @@ export async function onRequestPost(context) {
       );
     }
 
+    client = new Client({
+      connectionString: env.HYPERDRIVE.connectionString,
+      connectionTimeoutMillis: 15000
+    });
+
     await client.connect();
 
-    const result = await client.query(
+    await client.query(
       `
       INSERT INTO onboarding.email_leads (email, source)
       VALUES ($1, $2)
       ON CONFLICT (email) DO NOTHING
-      RETURNING id, email, source, status, created_at
       `,
       [email, source]
     );
@@ -40,14 +40,19 @@ export async function onRequestPost(context) {
 
     return Response.json({
       success: true,
-      data: result.rows[0] || { email, message: "Already exists" }
+      message: "Email submitted successfully"
     });
 
   } catch (error) {
-    context.waitUntil(client.end().catch(() => {}));
+    if (client) {
+      context.waitUntil(client.end().catch(() => {}));
+    }
 
     return Response.json(
-      { success: false, error: error.message },
+      {
+        success: false,
+        error: error.message
+      },
       { status: 500 }
     );
   }
