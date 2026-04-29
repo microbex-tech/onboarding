@@ -17,19 +17,17 @@ export async function onRequestPost(context) {
       );
     }
 
-    // Use Hyperdrive execute method
-    const result = await env.HYPERDRIVE.execute(
-      `INSERT INTO onboarding.email_leads (email, source)
-       VALUES (?, ?)
+    // Build and execute SQL query
+    const query = `INSERT INTO onboarding.email_leads (email, source)
+       VALUES ('${email.replace(/'/g, "''")}', '${source.replace(/'/g, "''")}')
        ON CONFLICT (email) DO NOTHING
-       RETURNING id, email, created_at`,
-      [email, source]
-    );
+       RETURNING id, email, created_at`;
 
+    const result = await env.HYPERDRIVE.query(query);
 
     return Response.json({
       success: true,
-      data: result.rows[0] || { email, message: "Already exists" }
+      data: result.records[0] || { email, message: "Already exists" }
     });
 
    } catch (error) {
