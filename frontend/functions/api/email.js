@@ -17,14 +17,13 @@ export async function onRequestPost(context) {
       );
     }
 
-    // Use Hyperdrive SQL directly
-    const result = await env.HYPERDRIVE.query(
+    // Use Hyperdrive with prepare and bind
+    const result = await env.HYPERDRIVE.prepare(
       `INSERT INTO onboarding.email_leads (email, source)
-       VALUES ($1, $2)
+       VALUES (?, ?)
        ON CONFLICT (email) DO NOTHING
-       RETURNING id, email, created_at`,
-      [email, source]
-    );
+       RETURNING id, email, created_at`
+    ).bind(email, source).run();
 
 
     return Response.json({
