@@ -6,7 +6,6 @@ function isValidEmail(email) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-  let client;
 
   try {
     const body = await request.json();
@@ -21,8 +20,7 @@ export async function onRequestPost(context) {
       );
     }
 
-    // ✅ Correct way: use pg + Hyperdrive connectionString
-    client = new Client({
+    const client = new Client({
       connectionString: env.HYPERDRIVE.connectionString
     });
 
@@ -33,7 +31,7 @@ export async function onRequestPost(context) {
       INSERT INTO onboarding.email_leads (email, source)
       VALUES ($1, $2)
       ON CONFLICT (email) DO NOTHING
-      RETURNING id, email, created_at
+      RETURNING id, email, source, status, created_at
       `,
       [email, source]
     );
@@ -50,10 +48,5 @@ export async function onRequestPost(context) {
       { success: false, error: error.message },
       { status: 500 }
     );
-
-  } finally {
-    if (client) {
-      await client.end();
-    }
   }
 }
