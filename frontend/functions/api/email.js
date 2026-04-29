@@ -6,10 +6,14 @@ function isValidEmail(email) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const client = new Client({
+    connectionString: env.HYPERDRIVE.connectionString,
+    connectionTimeoutMillis: 5000,
+    query_timeout: 5000
+  });
 
   try {
     const body = await request.json();
-
     const email = body.email?.trim().toLowerCase();
     const source = body.source || "website";
 
@@ -19,10 +23,6 @@ export async function onRequestPost(context) {
         { status: 400 }
       );
     }
-
-    const client = new Client({
-      connectionString: env.HYPERDRIVE.connectionString
-    });
 
     await client.connect();
 
@@ -36,13 +36,15 @@ export async function onRequestPost(context) {
       [email, source]
     );
 
+    context.waitUntil(client.end().catch(() => {}));
+
     return Response.json({
       success: true,
       data: result.rows[0] || { email, message: "Already exists" }
     });
 
   } catch (error) {
-    console.error("API ERROR:", error);
+    context.waitUntil(client.end().catch(() => {}));
 
     return Response.json(
       { success: false, error: error.message },
