@@ -17,13 +17,14 @@ export async function onRequestPost(context) {
       );
     }
 
-    // Use Hyperdrive with prepare and bind
-    const result = await env.HYPERDRIVE.prepare(
+    // Use Hyperdrive execute method
+    const result = await env.HYPERDRIVE.execute(
       `INSERT INTO onboarding.email_leads (email, source)
        VALUES (?, ?)
        ON CONFLICT (email) DO NOTHING
-       RETURNING id, email, created_at`
-    ).bind(email, source).run();
+       RETURNING id, email, created_at`,
+      [email, source]
+    );
 
 
     return Response.json({
